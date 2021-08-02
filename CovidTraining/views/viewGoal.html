@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Profile</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+</head>
+
+<body onload="getData();">
+
+  <header>
+
+    <div class="row">
+
+      <div class="col-md-6">
+        <div class="logo">
+          <h1><a href="/profile"><b>COVID Training</b></a></h1>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+      </div>
+
+      <div class="col-md-4">
+        <div class="logoutContainer">
+          <a class="button" href="/sessionLogout">Log out</a>
+        </div>
+      </div>
+
+  </div>
+
+  </header>
+
+
+
+
+
+  <div class="row">
+
+    <div class="col-md-2"></div>
+
+
+    <div class="col-md-8">
+        <div class="container">
+            
+            
+            
+            <div class="row">
+                <div class="headOfPage">
+                    <div class="col-md-4">
+                        <a class="button" onclick=callEditGoal();>EDIT GOAL</a>
+                    </div>
+
+                    <div class="col-md-4">
+                        <h2>Goal</h2>
+                      </div>
+
+                      <div class="col-md-4">
+                        <a class="button" onclick=deleteGoal();>DELETE GOAL</a>
+                      </div> 
+
+                </div>
+            </div>
+       
+
+
+            <div class="row">
+
+                <div class="col-md-2"></div>
+
+
+                
+                <div class="col-md-8">
+                    
+                    <div id="goalInfo">
+                    </div>
+  
+                </div>
+
+                <div class="col-md-2"></div>
+
+            </div>
+
+
+            
+            <div class="row">
+
+              <div class="col-md-2"></div>
+
+
+              
+              <div class="col-md-8">
+                  
+                <div class="completeButton">
+                    <a class="button" onclick=completeGoal();>COMPLETE</a>
+                </div>
+
+              </div>
+
+              <div class="col-md-2"></div>
+
+          </div>
+
+
+
+
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+
+  <script>
+ 
+    // Initialize Firebase
+
+    var firebaseConfig = {
+    apiKey: "AIzaSyBa1QN8C_dlKJT8Mcum0aeo1rnAda1YM6U",
+    authDomain: "covidtraining-5a2cc.firebaseapp.com",
+    databaseURL: "https://covidtraining-5a2cc-default-rtdb.firebaseio.com",
+    projectId: "covidtraining-5a2cc",
+    storageBucket: "covidtraining-5a2cc.appspot.com",
+    messagingSenderId: "70195591210",
+    appId: "1:70195591210:web:c333d35af6915815eb2b53"
+  };
+
+    firebase.initializeApp(firebaseConfig);
+
+
+    //THIS PAGE FUNCTIONS
+
+    var database = firebase.database();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const goalId = urlParams.get('goalId');
+    const userId = urlParams.get('userId');
+
+    function getData() {
+
+    var ref = database.ref(userId + "/"+ 'goals/'+ goalId);
+    
+    console.log(ref)
+
+    ref.on('value', gotData, errData);
+
+    }
+
+    function gotData(data) {
+     
+        var goalInfo = data.val();
+      
+        var title = goalInfo.title;
+        var description = goalInfo.description;
+        var desiredResult = goalInfo.desiredResult;
+        var actualResult = goalInfo.actualResult;
+        var dueDate = goalInfo.dueDate;
+        var completedDate = goalInfo.completedDate;
+        var completed = goalInfo.completed;
+
+        var completedText;
+        
+        if(completed == 1){
+          completedText = "Yes"
+        }
+        else{
+          completedText = "No"
+        }
+
+
+
+        var titleElement = document.createElement('h3');
+        titleElement.innerText = title;
+
+        var descriptionElement = document.createElement('p');
+        descriptionElement.innerText = "Description: " + description;
+
+        var desiredResultElement = document.createElement('p');
+        desiredResultElement.innerText = "Desired Result: " + desiredResult;
+
+        var actualResultElement = document.createElement('p');
+        actualResultElement.innerText = "Actual Result: " + actualResult;
+
+        var dueDateElement = document.createElement('p');
+        dueDateElement.innerText = "Due Date: " + dueDate;
+
+        var completedDateElement = document.createElement('p');
+        completedDateElement.innerText = "Completed Date: " + completedDate;
+
+        var completedElement = document.createElement('p');
+        completedElement.innerText = "Completed?: " + completedText;
+
+      
+        document.getElementById('goalInfo').appendChild(titleElement);
+        document.getElementById("goalInfo").appendChild(descriptionElement);
+        document.getElementById("goalInfo").appendChild(desiredResultElement);
+        document.getElementById("goalInfo").appendChild(actualResultElement);
+        document.getElementById("goalInfo").appendChild(dueDateElement);
+        document.getElementById("goalInfo").appendChild(completedDateElement);
+        document.getElementById("goalInfo").appendChild(completedElement);
+
+    }
+
+    function errData(data) {
+
+      console.log("ERROR");
+      console.log(error);
+    }
+
+
+    
+    function callEditGoal() {
+        window.location.assign("/editGoal" + "?userId=" + userId + "&goalId=" + goalId)
+    }
+
+
+    
+    function deleteGoal() {
+
+      var ref = database.ref(userId + "/"+ 'goals/'+ goalId);
+
+        var r = confirm("Are you sure?");
+        if (r == true) {
+
+        ref.remove();
+        window.location.assign("/profile" + "?userId=" + userId);
+
+        } 
+        else {
+
+        return
+
+        }    
+    }
+
+
+    function completeGoal() {
+
+      var ref = database.ref(userId + "/"+ 'goals/'+ goalId);
+
+      var newActualResult = prompt("Enter your achieved metric, this should be comparable to your desired outcome?", "50");
+
+      var today = new Date();
+      var dd = today.getDate();
+
+      var mm = today.getMonth()+1; 
+      var yyyy = today.getFullYear();
+      if(dd<10) 
+      {
+          dd='0'+dd;
+      } 
+
+      if(mm<10) 
+      {
+          mm='0'+mm;
+      } 
+      today = yyyy+'-'+mm+'-'+dd;
+
+      var newCompletedDate = today;
+
+      var goal = {
+            actualResult: newActualResult,
+            completed: 1,
+            completedDate: newCompletedDate
+         }
+      
+      var result = ref.update(goal);  
+
+      window.location.assign("/profile" + "?userId=" + userId + "&goalId=" + goalId);
+
+
+
+    }
+
+
+
+
+
+  </script>
+
+
+
+ <style>
+
+      body{
+      background-color:crimson;
+      }
+
+      .container{
+        background-color: white;
+        width: 100%;
+        padding:75px;
+        height: 100vh;
+      }
+
+      .logo{
+        padding:5px;
+        margin-left: 75px;
+      }
+
+      h1{
+      color: white;
+      text-align: center;
+      padding: 20px;
+      }
+
+      h1 a{
+      color: white;
+      }
+
+      h2{
+      color: crimson;
+      text-align: center;
+      }
+
+      p{
+      color: black;
+      }
+
+      input{
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      }
+
+
+      button{
+        background-color: grey;
+            color: crimson;
+            border: 1px solid;
+            padding: 10px;
+            width: 100px;
+            outline: none;
+            margin: auto;
+            
+      }
+
+      button:hover{
+        background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .button {
+      font: bold 18px Arial;
+      background-color: darkgray;
+      color: white;
+      padding: 12px 6px;
+      margin-left: 100px;
+      } 
+
+      .button:hover{
+            background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .errorMsg{
+        color:red;
+        text-transform: uppercase;
+      }
+
+      .logoutContainer{
+        margin-top:50px;
+      }
+
+    .headOfPage h2{
+        margin: 20px;
+    }
+
+    #goalInfo{
+        text-align: center;
+
+    }
+
+    #goalInfo h3{
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+
+    }
+
+    #goalInfo p{
+        text-align: center;
+        font-size: 20px;
+
+    }
+
+    .completeButton{
+      text-align: center;
+      margin: 20px;
+    }
+
+    .completeButton a{
+      text-align: center;
+      margin: 20px;
+    }
+
+
+
+
+
+    
+</style>
+
+</body>
+
+</html>

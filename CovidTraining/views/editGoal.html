@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Profile</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+</head>
+
+<body onload="getData();">
+
+  <header>
+
+    <div class="row">
+
+      <div class="col-md-6">
+        <div class="logo">
+            <h1><a href="/profile"><b>COVID Training</b></a></h1>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+      </div>
+
+      <div class="col-md-4">
+        <div class="logoutContainer">
+          <a class="button" href="/sessionLogout">Log out</a>
+        </div>
+      </div>
+
+  </div>
+
+  </header>
+
+
+
+
+
+  <div class="row">
+      
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8">
+
+      <div class="container">
+        
+        <h2>Edit Goal</h2>
+
+        <form id="editGoal">
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title"><br>
+
+            <label for="description">Description:</label><br>
+            <input type="text" id="description" name="description"><br>
+            
+            <label for="desiredResult">Desired Result:</label><br>
+            <i>enter a metric that can measure your progress</i>
+            <input type="text" id="desiredResult" name="desiredResult"><br>
+
+            <label for="dueDate">Due Date:</label><br>
+            <input type="date" value="2021-08-01" id="dueDate" name="dueDate">
+
+            <input id="submit" type="submit" value="Submit">
+
+          </form>
+
+
+
+      </div>
+
+    <div class="col-md-2">
+    </div>
+  
+  </div>
+
+  
+
+
+
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+
+  <script>
+
+    // DATABASE SET UP
+
+    var firebaseConfig = {
+    apiKey: "AIzaSyBa1QN8C_dlKJT8Mcum0aeo1rnAda1YM6U",
+    authDomain: "covidtraining-5a2cc.firebaseapp.com",
+    databaseURL: "https://covidtraining-5a2cc-default-rtdb.firebaseio.com",
+    projectId: "covidtraining-5a2cc",
+    storageBucket: "covidtraining-5a2cc.appspot.com",
+    messagingSenderId: "70195591210",
+    appId: "1:70195591210:web:c333d35af6915815eb2b53"
+  };
+
+    firebase.initializeApp(firebaseConfig);
+
+
+    //THIS PAGE FUNCTIONS
+
+    var database = firebase.database();
+    
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const goalId = urlParams.get('goalId');
+    const userId = urlParams.get('userId');
+
+    function getData() {
+
+    var ref = database.ref(userId + "/" + 'goals/'+ goalId);
+
+    ref.on('value', gotData, errData);
+
+    }
+
+    function gotData(data) {
+     
+        var goalInfo = data.val();
+      
+        var title = goalInfo.title;
+        var description = goalInfo.description;
+        var desiredResult = goalInfo.desiredResult;
+        var dueDate = goalInfo.dueDate;
+
+        document.getElementById("title").value = title;
+        document.getElementById("description").value = description;
+        document.getElementById("desiredResult").value = desiredResult;
+        document.getElementById("dueDate").value = dueDate;
+
+
+    }
+
+    function errData(data) {
+
+      console.log("ERROR");
+      console.log(error);
+    }
+    
+
+
+    document
+          .getElementById("editGoal")
+          .addEventListener("submit", (event) => {
+            
+            event.preventDefault();
+
+
+            var ref = database.ref(userId + "/" + 'goals/'+ goalId);
+
+            const title = event.target.title.value;
+            const description = event.target.description.value;
+            const desiredResult = event.target.desiredResult.value;
+            const dueDate = event.target.dueDate.value;
+
+            var goal = {
+            title: title,
+            description: description,
+            desiredResult: desiredResult,
+            actualResult: null,
+            completed: 0,
+            completedDate: null,
+            dueDate: dueDate
+         }
+
+         var result = ref.update(goal);  
+
+         window.location.assign("/profile" + "?userId=" + userId + "&goalId=" + goalId);
+         
+
+        });
+
+
+
+
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <style>
+
+      body{
+      background-color:crimson;
+      }
+
+      .container{
+        background-color: white;
+        width: 100%;
+        padding:75px;
+        height: 100vh;
+      }
+
+      .logo{
+        padding:5px;
+        margin-left: 75px;
+      }
+
+      h1{
+      color: white;
+      text-align: center;
+      padding: 20px;
+      }
+
+      h1 a{
+      color: white;
+      }
+
+      h2{
+      color: crimson;
+      text-align: center;
+      }
+
+      p{
+      color: red;
+      }
+
+      input{
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      }
+
+
+      button{
+        background-color: white;
+            color: crimson;
+            border: 1px solid;
+            padding: 10px;
+            width: 100px;
+            outline: none;
+            margin: auto;
+            
+      }
+
+      button:hover{
+        background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .button {
+      font: bold 18px Arial;
+      background-color: #fff;
+      color: #333333;
+      padding: 12px 6px;
+      margin-left: 100px;
+      } 
+
+      .button:hover{
+            background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .errorMsg{
+        color:red;
+        text-transform: uppercase;
+      }
+
+      .logoutContainer{
+        margin-top:50px;
+      }
+
+      
+    </style>
+
+</body>
+
+</html>

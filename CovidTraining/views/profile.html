@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Profile</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+</head>
+
+<body onload="getData();">
+
+  <header>
+
+    <div class="row">
+
+      <div class="col-md-6">
+        <div class="logo">
+          <h1><a href="/profile"><b>COVID Training</b></a></h1>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+      </div>
+
+      <div class="col-md-4">
+        <div class="logoutContainer">
+          <a class="button" href="/sessionLogout">LOG OUT</a>
+        </div>
+      </div>
+
+  </div>
+
+  </header>
+
+
+
+  <div class="row">
+      
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8">
+
+      <div class="container">
+           
+        <div class="headOfPage">
+          <div class="col-md-4"></div>
+
+          <div class="col-md-4">
+          </div>
+
+          <div class="col-md-4">
+            <a class="button" onclick=callAddGoal();>ADD GOAL</a>
+        </div>
+          
+        </div>
+
+        <div class="row">
+          
+        </div>
+
+        <h2>Active Goals</h2>
+
+        <table class="goals" id="activeGoals">
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Desired Result</th>
+            <th>Actual Result</th>
+            <th>Due Date</th>
+            <th>Completed Date</th>
+            <th>Completed?</th>
+          </tr>
+        </table>
+
+        <h2>Completed Goals</h2>
+
+        <table class="goals" id="completedGoals">
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Desired Result</th>
+            <th>Actual Result</th>
+            <th>Due Date</th>
+            <th>Completed Date</th>
+            <th>Completed?</th>
+          </tr>
+        </table>
+
+        <div class="percentageTitle">
+          <h3>Percentage of Goals Complete</h3>
+          <h4 id="percentageNumber"></h4>
+        </div>
+
+        <div id="myProgress">
+          <div id="myBar"></div>
+        </div>
+
+
+
+
+      </div>
+
+    <div class="col-md-2"></div>
+  
+  </div>
+
+  
+
+
+
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+
+
+  <script>
+ 
+    // Initialize Firebase
+
+    var firebaseConfig = {
+    apiKey: "AIzaSyBa1QN8C_dlKJT8Mcum0aeo1rnAda1YM6U",
+    authDomain: "covidtraining-5a2cc.firebaseapp.com",
+    databaseURL: "https://covidtraining-5a2cc-default-rtdb.firebaseio.com",
+    projectId: "covidtraining-5a2cc",
+    storageBucket: "covidtraining-5a2cc.appspot.com",
+    messagingSenderId: "70195591210",
+    appId: "1:70195591210:web:c333d35af6915815eb2b53"
+  };
+
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
+
+    //THIS PAGE FUNCTIONS
+
+    var database = firebase.database();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const userId = urlParams.get('userId');
+  
+    function getData() {
+    
+    var ref = database.ref(userId + '/goals');
+
+    ref.on('value', gotData, errData);
+
+    }
+
+    function gotData(data) {
+     
+      var goals = data.val();
+      var keys = Object.keys(goals);
+
+      for (var i = 0; i < keys.length; i++){
+        
+        var k = keys[i];
+
+        var createClickHandler = function(arg) {
+        return function() {window.location.assign("/viewGoal" + "?userId=" + userId + "&goalId=" + arg);};
+        }
+
+        var title = goals[k].title;
+        var description = goals[k].description;
+        var desiredResult = goals[k].desiredResult;
+        var actualResult = goals[k].actualResult;
+        var dueDate = goals[k].dueDate;
+        var completedDate = goals[k].completedDate;
+        var completed = goals[k].completed;
+
+        var completedText;
+
+        var goal = document.createElement("tr");
+        goal.id = 'goal'+i;
+        goal.className = '';
+        goal.onclick = createClickHandler(k);
+
+        var titleElement = document.createElement("td");
+        var descriptionElement = document.createElement("td");
+        var desiredResultElement = document.createElement("td");
+        var actualResultElement = document.createElement("td");
+        var dueDateElement = document.createElement("td");
+        var completedDateElement = document.createElement("td");
+        var completedElement = document.createElement("td");
+
+        titleElement.innerText = title;
+        descriptionElement.innerText = description;
+        desiredResultElement.innerText = desiredResult;
+        actualResultElement.innerText = actualResult;
+        dueDateElement.innerText = dueDate;
+        completedDateElement.innerText = completedDate;
+
+       if(completed == 1){
+          completedText = "Yes"
+        }
+        else{
+          completedText = "No"
+        } 
+
+        completedElement.innerText = completedText;
+
+
+        goal.appendChild(titleElement);
+        goal.appendChild(descriptionElement);
+        goal.appendChild(desiredResultElement);
+        goal.appendChild(actualResultElement);
+        goal.appendChild(dueDateElement);
+        goal.appendChild(completedDateElement);
+        goal.appendChild(completedElement);
+
+
+        
+        if(completed == 1){
+          document.getElementById("completedGoals").appendChild(goal);
+        }
+        else{
+          document.getElementById("activeGoals").appendChild(goal);
+        }
+
+      }
+
+      setProgressBar(data)
+
+    }
+
+    function errData(data) {
+
+      console.log("ERROR");
+      console.log(error);
+    }
+
+
+    function callAddGoal() {
+        window.location.assign("/addGoal" + "?userId=" + userId)
+    }
+
+    function setProgressBar(data) {
+
+      var goals = data.val()
+      var keys = Object.keys(goals);
+      var totalGoals = keys.length;
+      var completedGoals = 0;
+
+      for (var i = 0; i < totalGoals; i++){
+
+        var k = keys[i];
+
+        var completed = goals[k].completed;
+
+        if(completed == 1){
+          completedGoals++;
+        }
+      }
+        var completedGoalsPercentage = (completedGoals / totalGoals) * 100
+        var elem = document.getElementById("myBar");
+        var percentageNumber = document.getElementById("percentageNumber");
+
+        elem.style.width = completedGoalsPercentage + "%";
+        percentageNumber.innerText = completedGoalsPercentage + "%";
+        
+      
+      }
+ 
+
+
+  </script>
+
+
+
+ <style>
+
+
+#myProgress {
+  width: 100%;
+  background-color: grey;
+}
+
+#myBar {
+  width: 1%;
+  height: 30px;
+  background-color: green;
+}
+
+      body{
+      background-color:crimson;
+      }
+
+      .container{
+        background-color: white;
+        width: 100%;
+        padding:75px;
+        height: 100vh;
+      }
+
+      .logo{
+        padding:5px;
+        margin-left: 75px;
+      }
+
+      h1{
+      color: white;
+      text-align: center;
+      padding: 20px;
+      }
+
+      h1 a{
+      color: white;
+      }
+
+      h2{
+      color: crimson;
+      text-align: center;
+      }
+
+      p{
+      color: red;
+      }
+
+      input{
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      }
+
+
+      button{
+        background-color: grey;
+            color: crimson;
+            border: 1px solid;
+            padding: 10px;
+            width: 100px;
+            outline: none;
+            margin: auto;
+            
+      }
+
+      button:hover{
+        background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .button {
+      font: bold 18px Arial;
+      background-color: darkgray;
+      color: white;
+      padding: 12px 6px;
+      margin-left: 100px;
+      } 
+
+      .button:hover{
+            background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .errorMsg{
+        color:red;
+        text-transform: uppercase;
+      }
+
+      .logoutContainer{
+        margin-top:50px;
+      }
+
+      .container td {
+	  font-weight: normal;
+	  font-size: 1em;
+  -webkit-box-shadow: 0 2px 2px -2px crimson;
+	   -moz-box-shadow: 0 2px 2px -2px crimson;
+	        box-shadow: 0 2px 2px -2px crimson;
+}
+
+.goals {
+	  text-align: left;
+	  overflow: hidden;
+	  width: 80%;
+	  margin: 40px auto;
+  display: table;
+  padding: 0 0 8em 0;
+}
+
+.goals td, #goals th {
+	  padding-bottom: 2%;
+	  padding-top: 2%;
+  padding-left:2%;  
+}
+
+/* Background-color of the odd rows */
+.goals tr:nth-child(odd) {
+	  background-color: grey;
+    color:white;
+}
+
+/* Background-color of the even rows */
+.goals tr:nth-child(even) {
+	  background-color:grey;
+    color:white;
+}
+
+.goals th {
+	  background-color: darkgray;
+    color: black;
+}
+
+.goals td:first-child { font-weight: bold; }
+
+.goals tr:hover {
+   background-color: crimson;
+}
+
+.goals td:hover {
+  background-color: red;
+}
+
+.headOfPage h2{
+  margin: 20px;
+}
+    
+</style>
+
+</body>
+
+</html>

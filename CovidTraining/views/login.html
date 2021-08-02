@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>Login</title>
+  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.js" defer></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.1/firebase-ui-auth.css" defer/>
+
+
+  </head>
+
+  <body>
+     
+    
+    <div class="row">
+      
+      <div class="col-md-2"></div>
+
+      <div class="col-md-8">
+
+        <h1><a href="/index"><b>COVID Training</b></a></h1>
+    
+        <form id="login">
+
+
+          <h2>Login</h2>
+
+              <label>Email Address</label>
+              <input type="text" name="login" />
+              <label>Password</label>
+              <input type="password" name="password" />
+              
+              <label id="error" class="errorMsg">*Email or password incorrect - refresh and try again</label>
+              <p>Don't have an account yet? <a href="/signup">Register</a></p>
+
+              <div class="button-container-div">
+                <button>Log in</button>
+              </div>
+              
+    
+        </form>
+
+      </div>
+
+      <div class="col-md-2"></div>
+    
+    </div>
+
+
+
+    <style>
+      body{
+      background-color:crimson;
+      }
+
+      #login{
+        background-color: white;
+        width: 100%;
+        padding:75px;
+        height: 100vh;
+      }
+
+      h1{
+      color: white;
+      text-align: center;
+      padding: 20px;
+      }
+
+      h1 a{
+      color: white;
+      }
+
+      h2{
+      color: crimson;
+      text-align: center;
+      }
+
+      p{
+      color: red;
+      }
+
+      input{
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      }
+
+      .button-container-div {
+            text-align: center;
+            height: 40vh;
+        }
+
+      button{
+        background-color: crimson;
+            color: #fff;
+            border: 1px solid;
+            padding: 10px;
+            width: 100px;
+            outline: none;
+            margin: auto;
+            
+      }
+
+      button:hover{
+        background-color: #fff ;
+            color: crimson;
+            border: 1px solid;      
+      }
+
+      .errorMsg{
+        color:red;
+        text-transform: uppercase;
+      }
+
+      
+    </style>
+
+    
+
+      
+      <script>
+        
+        
+        //Functional Scripts
+
+        window.addEventListener("DOMContentLoaded", () => {
+            // Your web app's Firebase configuration
+            var firebaseConfig = {
+
+            apiKey: "AIzaSyBa1QN8C_dlKJT8Mcum0aeo1rnAda1YM6U",
+            authDomain: "covidtraining-5a2cc.firebaseapp.com",
+            projectId: "covidtraining-5a2cc",
+            storageBucket: "covidtraining-5a2cc.appspot.com",
+            messagingSenderId: "70195591210",
+            appId: "1:70195591210:web:c333d35af6915815eb2b53"
+
+          };
+
+          document.getElementById("error").style.display = 'none';
+          
+              // Initialize Firebase
+              firebase.initializeApp(firebaseConfig);
+            
+
+              firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
+
+            
+
+              document
+              .getElementById("login")
+              .addEventListener("submit", (event) => {
+                event.preventDefault();
+
+              const login = event.target.login.value;
+              const password = event.target.password.value;
+
+              firebase
+                .auth()
+                .signInWithEmailAndPassword(login, password)
+                .then(({ user }) => {
+                  return user.getIdToken().then((idToken) => {
+                    return fetch("/sessionLogin", {
+                      method: "POST",
+                      headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                        "CSRF-Token": Cookies.get("XSRF-TOKEN"),
+                      },
+                      body: JSON.stringify({ idToken }),
+                      
+                    });
+                  });
+                })
+                .then(() => {
+                  return firebase.auth().signOut();
+                })
+                .then((user) => {
+                  var userId = login.replace(".", "");
+                  window.location.assign("/profile" + "?userId=" + "'" + userId + "'");
+                })
+                .catch(function(error) {
+                  document.getElementById("error").innerHTML = error;
+                  document.getElementById("error").style.display = 'block';
+                });
+              return false;
+            });
+
+        });
+      </script>
+
+  </body>
+</html>
+
